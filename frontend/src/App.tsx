@@ -1,5 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Login from './components/Login';
 import ChangePassword from './components/ChangePassword';
 
@@ -19,6 +21,7 @@ const App: React.FC = () => {
       {loggedIn && (
         <button onClick={handleLogout}>Logout</button>
       )}
+      <ToastContainer />
       <Routes>
         <Route path="/login" element={<Login onLogin={() => setLoggedIn(true)} />} />
         <Route path="/change-password" element={loggedIn ? <ChangePassword /> : <Navigate to="/login" />} />
