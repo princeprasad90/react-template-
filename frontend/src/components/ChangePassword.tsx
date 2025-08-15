@@ -1,37 +1,51 @@
 import React from 'react';
+import { apiPost } from '../lib/apiClient';
+import { useForm } from '../lib/form';
 
 const ChangePassword: React.FC = () => {
-  const [currentPassword, setCurrentPassword] = React.useState('');
-  const [newPassword, setNewPassword] = React.useState('');
-  const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    const res = await fetch('/api/auth/change-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentPassword, newPassword })
-    });
-    if (res.ok) {
+  const { values, errors, handleChange, handleSubmit } = useForm(
+    { currentPassword: '', newPassword: '' },
+    v => {
+      const errs: any = {};
+      if (!v.currentPassword) errs.currentPassword = 'Required';
+      if (!v.newPassword) errs.newPassword = 'Required';
+      return errs;
+    }
+  );
+
+  const onSubmit = async (vals: typeof values) => {
+    try {
+      await apiPost('/api/auth/change-password', vals);
       setSuccess(true);
-    } else {
-      setError('Could not change password');
+    } catch {
+      alert('Could not change password');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <div>
         <label>Current Password</label>
-        <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+        <input
+          name="currentPassword"
+          type="password"
+          value={values.currentPassword}
+          onChange={handleChange}
+        />
+        {errors.currentPassword && <div style={{ color: 'red' }}>{errors.currentPassword}</div>}
       </div>
       <div>
         <label>New Password</label>
-        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+        <input
+          name="newPassword"
+          type="password"
+          value={values.newPassword}
+          onChange={handleChange}
+        />
+        {errors.newPassword && <div style={{ color: 'red' }}>{errors.newPassword}</div>}
       </div>
-      {error && <div style={{color:'red'}}>{error}</div>}
       {success && <div>Password changed</div>}
       <button type="submit">Change Password</button>
     </form>
