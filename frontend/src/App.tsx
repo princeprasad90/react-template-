@@ -2,17 +2,21 @@ import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import ChangePassword from './components/ChangePassword';
+import { apiPost } from './lib/apiClient';
+import { useAppState } from './lib/state';
 
 const App: React.FC = () => {
-  const [loggedIn, setLoggedIn] = React.useState(false);
+  const { state, dispatch } = useAppState();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    fetch('/api/auth/logout', { method: 'POST' }).then(() => {
-      setLoggedIn(false);
+    apiPost('/api/auth/logout', {}).finally(() => {
+      dispatch({ type: 'logout' });
       navigate('/login');
     });
   };
+
+  const loggedIn = !!state.user;
 
   return (
     <div>
@@ -20,7 +24,7 @@ const App: React.FC = () => {
         <button onClick={handleLogout}>Logout</button>
       )}
       <Routes>
-        <Route path="/login" element={<Login onLogin={() => setLoggedIn(true)} />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/change-password" element={loggedIn ? <ChangePassword /> : <Navigate to="/login" />} />
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>

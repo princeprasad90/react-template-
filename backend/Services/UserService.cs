@@ -7,20 +7,29 @@ namespace backend.Services
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly LdapService _ldapService;
 
-        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, LdapService ldapService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _ldapService = ldapService;
         }
 
         public async Task<bool> LoginAsync(LoginRequest request)
         {
-            var user = await _userManager.FindByNameAsync(request.Username);
-            if (user == null) return false;
+            var valid = await _ldapService.ValidateCredentials(request.Username, request.Password);
+            if (!valid) return false;
 
-            var result = await _signInManager.PasswordSignInAsync(user, request.Password, false, false);
-            return result.Succeeded;
+            var user = await _userManager.FindByNameAsync(request.Username);
+            if (user == null)
+            {
+                user = new AppUser { UserName = request.Username };
+                await _userManager.CreateAsync(user);
+            }
+
+            await _signInManager.SignInAsync(user, false);
+            return true;
         }
 
         public async Task LogoutAsync()

@@ -26,6 +26,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<LdapService>();
 builder.Services.AddScoped<UserService>();
 
 builder.Services.AddControllers();

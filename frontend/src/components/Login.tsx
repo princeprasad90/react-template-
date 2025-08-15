@@ -1,40 +1,46 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiPost } from '../lib/apiClient';
+import { useAppState } from '../lib/state';
+import { useForm } from '../lib/form';
 
-interface Props {
-  onLogin: () => void;
-}
+const Login: React.FC = () => {
+  const { dispatch } = useAppState();
+  const navigate = useNavigate();
 
-const Login: React.FC<Props> = ({ onLogin }) => {
-  const [username, setUsername] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState('');
+  const { values, errors, handleChange, handleSubmit } = useForm(
+    { username: '', password: '' },
+    v => {
+      const errs: any = {};
+      if (!v.username) errs.username = 'Required';
+      if (!v.password) errs.password = 'Required';
+      return errs;
+    }
+  );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    if (res.ok) {
-      onLogin();
-    } else {
-      setError('Invalid credentials');
+  const onSubmit = async (vals: typeof values) => {
+    try {
+      await apiPost('/api/auth/login', vals);
+      dispatch({ type: 'login', user: vals.username });
+      navigate('/change-password');
+    } catch (e) {
+      dispatch({ type: 'logout' });
+      alert('Invalid credentials');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <div>
         <label>Username</label>
-        <input value={username} onChange={e => setUsername(e.target.value)} />
+        <input name="username" value={values.username} onChange={handleChange} />
+        {errors.username && <div style={{color:'red'}}>{errors.username}</div>}
       </div>
       <div>
         <label>Password</label>
-        <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+        <input name="password" type="password" value={values.password} onChange={handleChange} />
+        {errors.password && <div style={{color:'red'}}>{errors.password}</div>}
       </div>
-      {error && <div style={{color:'red'}}>{error}</div>}
       <button type="submit">Login</button>
     </form>
   );
