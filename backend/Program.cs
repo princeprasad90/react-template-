@@ -28,7 +28,10 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<UserService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+});
 
 var app = builder.Build();
 app.UseHttpsRedirection();
