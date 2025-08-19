@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import ChangePassword from './components/ChangePassword';
+import Examples from './components/Examples';
 
 const App: React.FC = () => {
   const [loggedIn, setLoggedIn] = React.useState(false);
@@ -22,6 +23,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/login" element={<Login onLogin={() => setLoggedIn(true)} />} />
         <Route path="/change-password" element={loggedIn ? <ChangePassword /> : <Navigate to="/login" />} />
+        <Route path="/examples" element={loggedIn ? <Examples /> : <Navigate to="/login" />} />
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </div>
