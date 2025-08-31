@@ -8,7 +8,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
   const [loggedIn, setLoggedIn] = useState(false);
 
   const login = () => setLoggedIn(true);
@@ -19,7 +19,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);

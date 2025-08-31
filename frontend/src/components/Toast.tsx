@@ -12,7 +12,7 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
-export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function ToastProvider({ children }: { children: ReactNode }): JSX.Element {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const remove = (id: number) => setToasts(t => t.filter(toast => toast.id !== id));
@@ -33,7 +33,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       </div>
     </ToastContext.Provider>
   );
-};
+}
 
 export const useToast = () => {
   const ctx = useContext(ToastContext);

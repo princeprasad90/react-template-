@@ -3,7 +3,7 @@ import * as yup from 'yup';
 import { useFormCommand } from '../../hooks/useFormCommand';
 import { validateRelatedFields } from '../../utils/validation';
 
-const ChangePassword: React.FC = () => {
+function ChangePassword(): JSX.Element {
   const [currentPassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
@@ -46,17 +46,25 @@ const ChangePassword: React.FC = () => {
     <form onSubmit={handleSubmit}>
       <div>
         <label>Current Password</label>
-        <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+        <input
+          type="password"
+          value={currentPassword}
+          onChange={e => setCurrentPassword(e.target.value)}
+        />
       </div>
       <div>
         <label>New Password</label>
-        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+        <input
+          type="password"
+          value={newPassword}
+          onChange={e => setNewPassword(e.target.value)}
+        />
       </div>
-      {error && <div style={{color:'red'}}>{error}</div>}
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       {success && <div>Password changed</div>}
       <button type="submit">Change Password</button>
     </form>
   );
-};
+}
 
 export default ChangePassword;

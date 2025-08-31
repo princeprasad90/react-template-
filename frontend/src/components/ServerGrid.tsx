@@ -6,7 +6,7 @@ interface Item {
   name: string;
 }
 
-const ServerGrid: React.FC = () => {
+function ServerGrid(): JSX.Element {
   const [data, setData] = React.useState<Item[]>([]);
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
@@ -60,6 +60,6 @@ const ServerGrid: React.FC = () => {
       </button>
     </div>
   );
-};
+}
 
 export default ServerGrid;

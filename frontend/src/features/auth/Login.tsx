@@ -4,7 +4,7 @@ import { useFormCommand } from '../../hooks/useFormCommand';
 import { validateRegex } from '../../utils/validation';
 import { useAuth } from '../../store/auth';
 
-const Login: React.FC = () => {
+function Login(): JSX.Element {
   const { login } = useAuth();
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -50,10 +50,10 @@ const Login: React.FC = () => {
         <label>Password</label>
         <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
       </div>
-      {error && <div style={{color:'red'}}>{error}</div>}
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       <button type="submit">Login</button>
     </form>
   );
-};
+}
 
 export default Login;

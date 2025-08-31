@@ -7,7 +7,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const ConfirmModal: React.FC<Props> = ({ open, message, onConfirm, onCancel }) => {
+function ConfirmModal({ open, message, onConfirm, onCancel }: Props): JSX.Element | null {
   if (!open) return null;
   return (
     <div className="modal-backdrop">
@@ -18,6 +18,6 @@ const ConfirmModal: React.FC<Props> = ({ open, message, onConfirm, onCancel }) =
       </div>
     </div>
   );
-};
+}
 
 export default ConfirmModal;

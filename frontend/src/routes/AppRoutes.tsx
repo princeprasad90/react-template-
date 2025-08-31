@@ -7,7 +7,7 @@ import PromoCodes from '../pages/PromoCodes';
 import Products from '../pages/Products';
 import { useAuth } from '../store/auth';
 
-const AppRoutes: React.FC = () => {
+function AppRoutes(): JSX.Element {
   const { loggedIn } = useAuth();
 
   return (
@@ -20,6 +20,6 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Navigate to="/login" />} />
     </Routes>
   );
-};
+}
 
 export default AppRoutes;

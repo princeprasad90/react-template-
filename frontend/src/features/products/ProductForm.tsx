@@ -13,12 +13,14 @@ interface Props {
   onCancel: () => void;
 }
 
-const ProductForm: React.FC<Props> = ({ initial, onSave, onCancel }) => {
+function ProductForm({ initial, onSave, onCancel }: Props): JSX.Element {
   const [form, setForm] = useState<Product>(
     initial || { code: '', name: '', description: '', quantity: 0 }
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: name === 'quantity' ? Number(value) : value }));
   };
@@ -47,9 +49,11 @@ const ProductForm: React.FC<Props> = ({ initial, onSave, onCancel }) => {
         <input type="number" name="quantity" value={form.quantity} onChange={handleChange} />
       </div>
       <button type="submit">Save</button>
-      <button type="button" onClick={onCancel}>Cancel</button>
+      <button type="button" onClick={onCancel}>
+        Cancel
+      </button>
     </form>
   );
-};
+}
 
 export default ProductForm;

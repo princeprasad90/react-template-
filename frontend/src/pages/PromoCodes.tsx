@@ -22,7 +22,7 @@ interface ApiResponse {
   };
 }
 
-const PromoCodes: React.FC = () => {
+function PromoCodes(): JSX.Element {
   const [data, setData] = React.useState<PromoCode[]>([]);
   const [promoCode, setPromoCode] = React.useState('');
   const [status, setStatus] = React.useState('');
@@ -119,6 +119,6 @@ const PromoCodes: React.FC = () => {
       </button>
     </div>
   );
-};
+}
 
 export default PromoCodes;

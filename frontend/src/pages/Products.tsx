@@ -4,7 +4,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import { api } from '../api';
 import { useToast } from '../components/Toast';
 
-const Products: React.FC = () => {
+function Products(): JSX.Element {
   const [products, setProducts] = useState<Product[]>([]);
   const [editing, setEditing] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -59,19 +59,36 @@ const Products: React.FC = () => {
   return (
     <div>
       <h2>Products</h2>
-      <button onClick={() => { setShowForm(true); setEditing(null); }}>Add Product</button>
+      <button
+        onClick={() => {
+          setShowForm(true);
+          setEditing(null);
+        }}
+      >
+        Add Product
+      </button>
       {showForm && (
         <ProductForm
           initial={editing || undefined}
           onSave={handleSave}
-          onCancel={() => { setShowForm(false); setEditing(null); }}
+          onCancel={() => {
+            setShowForm(false);
+            setEditing(null);
+          }}
         />
       )}
       <ul>
         {products.map(p => (
           <li key={p.code}>
             {p.code} - {p.name} ({p.quantity})
-            <button onClick={() => { setEditing(p); setShowForm(true); }}>Edit</button>
+            <button
+              onClick={() => {
+                setEditing(p);
+                setShowForm(true);
+              }}
+            >
+              Edit
+            </button>
             <button onClick={() => confirmDelete(p.code)}>Delete</button>
           </li>
         ))}
@@ -84,6 +101,6 @@ const Products: React.FC = () => {
       />
     </div>
   );
-};
+}
 
 export default Products;

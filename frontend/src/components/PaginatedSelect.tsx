@@ -12,8 +12,8 @@ const loadOptions = async (inputValue: string, _loaded: any, additional: any) =>
   };
 };
 
-const PaginatedSelect: React.FC = () => (
-  <AsyncPaginate loadOptions={loadOptions} additional={{ page: 1 }} />
-);
+function PaginatedSelect(): JSX.Element {
+  return <AsyncPaginate loadOptions={loadOptions} additional={{ page: 1 }} />;
+}
 
 export default PaginatedSelect;

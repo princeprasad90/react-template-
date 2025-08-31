@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './store/auth';
 import MainLayout from './layouts/MainLayout';
 import { ToastProvider } from './components/Toast';
 
-const AppContent: React.FC = () => {
+function AppContent(): JSX.Element {
   const navigate = useNavigate();
   const { loggedIn, logout } = useAuth();
 
@@ -22,14 +22,16 @@ const AppContent: React.FC = () => {
       <AppRoutes />
     </MainLayout>
   );
-};
+}
 
-const App: React.FC = () => (
-  <AuthProvider>
-    <ToastProvider>
-      <AppContent />
-    </ToastProvider>
-  </AuthProvider>
-);
+function App(): JSX.Element {
+  return (
+    <AuthProvider>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </AuthProvider>
+  );
+}
 
 export default App;
