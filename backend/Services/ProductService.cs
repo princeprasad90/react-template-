@@ -1,47 +1,40 @@
+using System.Collections.Generic;
 using backend.Models;
 
 namespace backend.Services
 {
     public class ProductService
     {
-        private readonly List<Product> _products = new();
+        private readonly Dictionary<string, Product> _products = new(StringComparer.OrdinalIgnoreCase);
 
-        public IEnumerable<Product> GetAll() => _products;
+        public IEnumerable<Product> GetAll() => _products.Values;
 
-        public Product? Get(string code) => _products.FirstOrDefault(p => p.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+        public Product? Get(string code) =>
+            _products.TryGetValue(code, out var product) ? product : null;
 
         public bool Create(Product product)
         {
-            if (_products.Any(p => p.Code.Equals(product.Code, StringComparison.OrdinalIgnoreCase)))
+            if (_products.ContainsKey(product.Code))
                 return false;
-            _products.Add(product);
+            _products[product.Code] = product;
             return true;
         }
 
         public bool Update(string code, Product product)
         {
-            var existing = Get(code);
-            if (existing == null) return false;
+            if (!_products.ContainsKey(code)) return false;
 
             if (!code.Equals(product.Code, StringComparison.OrdinalIgnoreCase) &&
-                _products.Any(p => p.Code.Equals(product.Code, StringComparison.OrdinalIgnoreCase)))
+                _products.ContainsKey(product.Code))
             {
                 return false;
             }
 
-            existing.Code = product.Code;
-            existing.Name = product.Name;
-            existing.Description = product.Description;
-            existing.Quantity = product.Quantity;
+            _products.Remove(code);
+            _products[product.Code] = product;
             return true;
         }
 
-        public bool Delete(string code)
-        {
-            var existing = Get(code);
-            if (existing == null) return false;
-            _products.Remove(existing);
-            return true;
-        }
+        public bool Delete(string code) => _products.Remove(code);
     }
 }
