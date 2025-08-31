@@ -1,6 +1,6 @@
 import React from 'react';
-import PaginatedSelect from './PaginatedSelect';
-import ServerGrid from './ServerGrid';
+import PaginatedSelect from '../components/PaginatedSelect';
+import ServerGrid from '../components/ServerGrid';
 
 const Examples: React.FC = () => (
   <div>

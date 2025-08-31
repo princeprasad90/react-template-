@@ -1,13 +1,11 @@
 import React from 'react';
 import * as yup from 'yup';
-import { useFormCommand } from '../hooks/useFormCommand';
-import { validateRegex } from '../utils/validation';
+import { useFormCommand } from '../../hooks/useFormCommand';
+import { validateRegex } from '../../utils/validation';
+import { useAuth } from '../../store/auth';
 
-interface Props {
-  onLogin: () => void;
-}
-
-const Login: React.FC<Props> = ({ onLogin }) => {
+const Login: React.FC = () => {
+  const { login } = useAuth();
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
@@ -30,7 +28,7 @@ const Login: React.FC<Props> = ({ onLogin }) => {
       });
       if (!res.ok) throw new Error('Invalid credentials');
     },
-    onSuccess: onLogin
+    onSuccess: login
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import * as yup from 'yup';
-import { useFormCommand } from '../hooks/useFormCommand';
-import { validateRelatedFields } from '../utils/validation';
+import { useFormCommand } from '../../hooks/useFormCommand';
+import { validateRelatedFields } from '../../utils/validation';
 
 const ChangePassword: React.FC = () => {
   const [currentPassword, setCurrentPassword] = React.useState('');

@@ -27,6 +27,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<UserService>();
+builder.Services.AddSingleton<ProductService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
