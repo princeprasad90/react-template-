@@ -75,6 +75,27 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(m => m.AddAspNetCoreInstrumentation())
     .WithLogging();
 
+builder.Services.AddHttpClient<IProductsClient, ProductsClient>(client =>
+{
+    var baseUrl = builder.Configuration["Services:Products"] ?? "https://example.com";
+    client.BaseAddress = new Uri(baseUrl);
+})
+.AddPolicyHandler(ResiliencePolicies.Retry)
+.AddPolicyHandler(ResiliencePolicies.Timeout)
+.AddPolicyHandler(ResiliencePolicies.CircuitBreaker);
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t =>
+    {
+        t.AddAspNetCoreInstrumentation();
+        t.AddHttpClientInstrumentation();
+        t.AddProcessor(sp =>
+            new SimpleActivityExportProcessor(
+                new SqlTraceExporter(sp.GetRequiredService<TraceDbContext>())));
+    })
+    .WithMetrics(m => m.AddAspNetCoreInstrumentation())
+    .WithLogging();
+
 var app = builder.Build();
 
 app.UseAuthentication();
@@ -84,5 +105,6 @@ app.MapAuthEndpoints();
 app.MapItemEndpoints();
 app.MapPromoCodeEndpoints();
 app.MapProductEndpoints();
+
 
 app.Run();
