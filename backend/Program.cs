@@ -1,5 +1,6 @@
 using backend.Clients;
 using backend.Data;
+using backend.Endpoints;
 using backend.Models;
 using backend.Observability;
 using backend.Policies;
@@ -68,10 +69,10 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/products", async (IProductsClient client, HttpContext ctx) =>
-{
-    var data = await client.GetProductsAsync(ctx.RequestAborted);
-    return Results.Ok(data);
-}).RequireAuthorization();
+app.MapAuthEndpoints();
+app.MapItemEndpoints();
+app.MapPromoCodeEndpoints();
+app.MapProductEndpoints();
+
 
 app.Run();

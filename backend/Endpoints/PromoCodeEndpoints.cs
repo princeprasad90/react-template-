@@ -1,16 +1,16 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using backend.Models;
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using backend.Models;
 
-namespace backend.Controllers
+namespace backend.Endpoints;
+
+public static class PromoCodeEndpoints
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class PromoCodesController : ControllerBase
+    public static void MapPromoCodeEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        [HttpGet]
-        public IActionResult FetchPromoCodes(string promoCode = "", string status = "", int page = 1, int pageSize = 10)
+        endpoints.MapGet("/api/promocodes", (string? promoCode = "", string? status = "", int page = 1, int pageSize = 10) =>
         {
             var allCodes = Enumerable.Range(1, 50).Select(i => new PromoCode
             {
@@ -37,7 +37,7 @@ namespace backend.Controllers
             var data = allCodes.Skip((page - 1) * pageSize).Take(pageSize).ToList();
             var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-            return Ok(new
+            return Results.Ok(new
             {
                 Data = data,
                 Pagination = new
@@ -48,6 +48,6 @@ namespace backend.Controllers
                     TotalItems = totalItems
                 }
             });
-        }
+        });
     }
 }

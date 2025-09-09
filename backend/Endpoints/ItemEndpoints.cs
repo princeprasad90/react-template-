@@ -1,15 +1,15 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
 
-namespace backend.Controllers
+namespace backend.Endpoints;
+
+public static class ItemEndpoints
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ItemsController : ControllerBase
+    public static void MapItemEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        [HttpGet]
-        public IActionResult GetItems(int page = 1, int pageSize = 25, string search = "")
+        endpoints.MapGet("/api/items", (int page = 1, int pageSize = 25, string? search = "") =>
         {
             var allItems = Enumerable.Range(1, 100)
                 .Select(i => new { id = i, name = $"Item {i}" });
@@ -25,7 +25,7 @@ namespace backend.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            return Ok(new { items, totalCount = total });
-        }
+            return Results.Ok(new { items, totalCount = total });
+        });
     }
 }
