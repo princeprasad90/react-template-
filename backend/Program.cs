@@ -1,13 +1,21 @@
+using backend.Clients;
+using backend.Data;
+using backend.Endpoints;
+using backend.Models;
+using backend.Observability;
+using backend.Policies;
+using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using backend.Data;
-using backend.Models;
-using backend.Services;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("AuthDb"));
+
+builder.Services.AddDbContext<TraceDbContext>(options =>
+    options.UseInMemoryDatabase("TraceDb"));
 
 builder.Services.AddIdentityCore<AppUser>(options =>
 {
@@ -18,36 +26,63 @@ builder.Services.AddIdentityCore<AppUser>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
-}).AddCookie(IdentityConstants.ApplicationScheme);
-
-builder.Services.AddAuthorization();
-
 builder.Services.AddScoped<UserService>();
 
-builder.Services.AddControllers().AddJsonOptions(options =>
+builder.Services.AddAuthentication(options =>
 {
-    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    options.DefaultScheme = "Cookies";
+    options.DefaultChallengeScheme = "oidc";
+})
+.AddCookie("Cookies")
+.AddOpenIdConnect("oidc", options =>
+{
+    options.Authority = builder.Configuration["Auth:Authority"];
+    options.ClientId = builder.Configuration["Auth:ClientId"];
+    options.ClientSecret = builder.Configuration["Auth:ClientSecret"];
+    options.ResponseType = "code";
+    options.SaveTokens = true;
 });
 
+builder.Services.AddHttpClient<IProductsClient, ProductsClient>(client =>
+{
+    var baseUrl = builder.Configuration["Services:Products"] ?? "https://example.com";
+    client.BaseAddress = new Uri(baseUrl);
+})
+.AddPolicyHandler(ResiliencePolicies.Retry)
+.AddPolicyHandler(ResiliencePolicies.Timeout)
+.AddPolicyHandler(ResiliencePolicies.CircuitBreaker);
+
+builder.Services.AddHttpClient<IAuthClient, AuthClient>(client =>
+{
+    var baseUrl = builder.Configuration["Services:Auth"] ?? "https://auth.example.com";
+    client.BaseAddress = new Uri(baseUrl);
+})
+.AddPolicyHandler(ResiliencePolicies.Retry)
+.AddPolicyHandler(ResiliencePolicies.Timeout)
+.AddPolicyHandler(ResiliencePolicies.CircuitBreaker);
+
+builder.Services.AddScoped<JwtService>();
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t =>
+    {
+        t.AddAspNetCoreInstrumentation();
+        t.AddHttpClientInstrumentation();
+        t.AddProcessor(sp =>
+            new SimpleActivityExportProcessor(
+                new SqlTraceExporter(sp.GetRequiredService<TraceDbContext>())));
+    })
+    .WithMetrics(m => m.AddAspNetCoreInstrumentation())
+    .WithLogging();
+
 var app = builder.Build();
-app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
 
-// Seed demo user
-using (var scope = app.Services.CreateScope())
-{
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-    if (userManager.FindByNameAsync("admin").Result == null)
-    {
-        var user = new AppUser { UserName = "admin" };
-        userManager.CreateAsync(user, "Admin123!").Wait();
-    }
-}
+app.MapAuthEndpoints();
+app.MapItemEndpoints();
+app.MapPromoCodeEndpoints();
+app.MapProductEndpoints();
 
 app.Run();
