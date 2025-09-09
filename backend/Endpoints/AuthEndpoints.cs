@@ -4,6 +4,8 @@ using System.Security.Claims;
 using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
+using backend.Clients;
+using Microsoft.Extensions.Configuration;
 
 namespace backend.Endpoints;
 
@@ -32,5 +34,15 @@ public static class AuthEndpoints
             var success = await userService.ChangePasswordAsync(appUser, request);
             return success ? Results.Ok() : Results.BadRequest();
         }).RequireAuthorization();
+
+        group.MapGet("/external-login", async (string key, IAuthClient authClient, JwtService jwtService, IConfiguration config, CancellationToken ct) =>
+        {
+            var authResponse = await authClient.ExchangeKeyAsync(key, ct);
+            if (authResponse is null) return Results.Unauthorized();
+
+            var token = jwtService.GenerateToken(authResponse.Profile, authResponse.Menu);
+            var redirect = config["Frontend:AuthRedirect"] ?? "/";
+            return Results.Redirect($"{redirect}?token={token}");
+        }).AllowAnonymous();
     }
 }

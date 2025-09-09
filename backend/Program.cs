@@ -52,6 +52,38 @@ builder.Services.AddHttpClient<IProductsClient, ProductsClient>(client =>
 .AddPolicyHandler(ResiliencePolicies.Timeout)
 .AddPolicyHandler(ResiliencePolicies.CircuitBreaker);
 
+builder.Services.AddHttpClient<IAuthClient, AuthClient>(client =>
+{
+    var baseUrl = builder.Configuration["Services:Auth"] ?? "https://auth.example.com";
+    client.BaseAddress = new Uri(baseUrl);
+})
+.AddPolicyHandler(ResiliencePolicies.Retry)
+.AddPolicyHandler(ResiliencePolicies.Timeout)
+.AddPolicyHandler(ResiliencePolicies.CircuitBreaker);
+
+builder.Services.AddScoped<JwtService>();
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t =>
+    {
+        t.AddAspNetCoreInstrumentation();
+        t.AddHttpClientInstrumentation();
+        t.AddProcessor(sp =>
+            new SimpleActivityExportProcessor(
+                new SqlTraceExporter(sp.GetRequiredService<TraceDbContext>())));
+    })
+    .WithMetrics(m => m.AddAspNetCoreInstrumentation())
+    .WithLogging();
+
+builder.Services.AddHttpClient<IProductsClient, ProductsClient>(client =>
+{
+    var baseUrl = builder.Configuration["Services:Products"] ?? "https://example.com";
+    client.BaseAddress = new Uri(baseUrl);
+})
+.AddPolicyHandler(ResiliencePolicies.Retry)
+.AddPolicyHandler(ResiliencePolicies.Timeout)
+.AddPolicyHandler(ResiliencePolicies.CircuitBreaker);
+
 builder.Services.AddOpenTelemetry()
     .WithTracing(t =>
     {
