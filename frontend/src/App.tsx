@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import { AuthProvider, useAuth } from './store/auth';
 import MainLayout from './layouts/MainLayout';
+import { api } from './api';
 
 const AppContent: React.FC = () => {
   const navigate = useNavigate();
   const { loggedIn, logout } = useAuth();
 
   const handleLogout = () => {
-    fetch('/api/auth/logout', { method: 'POST' }).then(() => {
+    api('/api/auth/logout', { method: 'POST' }).then(() => {
       logout();
       navigate('/login');
     });

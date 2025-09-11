@@ -1,5 +1,6 @@
 import React from 'react';
 import { useReactTable, ColumnDef, getCoreRowModel } from '@tanstack/react-table';
+import { api } from '../api';
 
 interface Item {
   id: number;
@@ -20,12 +21,10 @@ const ServerGrid: React.FC = () => {
   );
 
   React.useEffect(() => {
-    fetch(`/api/items?page=${page}&pageSize=5`)
-      .then(r => r.json())
-      .then(json => {
-        setData(json.items);
-        setTotal(json.totalCount);
-      });
+    api<any>(`/api/items?page=${page}&pageSize=5`).then(json => {
+      setData(json.items);
+      setTotal(json.totalCount);
+    });
   }, [page]);
 
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });

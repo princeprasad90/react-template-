@@ -27,8 +27,10 @@ const Login: React.FC = () => {
         body: JSON.stringify(values)
       });
       if (!res.ok) throw new Error('Invalid credentials');
+      return res.json();
     },
-    onSuccess: login
+    onSuccess: (tokens: { accessToken: string; refreshToken: string }) =>
+      login(tokens.accessToken, tokens.refreshToken)
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

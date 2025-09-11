@@ -2,6 +2,7 @@ import React from 'react';
 import * as yup from 'yup';
 import { useFormCommand } from '../../hooks/useFormCommand';
 import { validateRelatedFields } from '../../utils/validation';
+import { api } from '../../api';
 
 const ChangePassword: React.FC = () => {
   const [currentPassword, setCurrentPassword] = React.useState('');
@@ -22,12 +23,10 @@ const ChangePassword: React.FC = () => {
         }),
     }),
     api: async (values: { currentPassword: string; newPassword: string }) => {
-      const res = await fetch('/api/auth/change-password', {
+      await api('/api/auth/change-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values)
       });
-      if (!res.ok) throw new Error('Could not change password');
     },
     onSuccess: () => setSuccess(true)
   });
