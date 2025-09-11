@@ -4,6 +4,9 @@ using backend.Endpoints;
 using backend.Models;
 using backend.Observability;
 using backend.Policies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -30,17 +33,19 @@ builder.Services.AddScoped<UserService>();
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = "Cookies";
-    options.DefaultChallengeScheme = "oidc";
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddCookie("Cookies")
-.AddOpenIdConnect("oidc", options =>
+.AddJwtBearer(options =>
 {
-    options.Authority = builder.Configuration["Auth:Authority"];
-    options.ClientId = builder.Configuration["Auth:ClientId"];
-    options.ClientSecret = builder.Configuration["Auth:ClientSecret"];
-    options.ResponseType = "code";
-    options.SaveTokens = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? string.Empty))
+    };
 });
 
 builder.Services.AddHttpClient<IProductsClient, ProductsClient>(client =>

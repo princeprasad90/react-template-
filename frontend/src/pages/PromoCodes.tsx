@@ -1,5 +1,6 @@
 import React from 'react';
 import { useReactTable, ColumnDef, getCoreRowModel } from '@tanstack/react-table';
+import { api } from '../api';
 
 interface PromoCode {
   PromoCode: string;
@@ -52,12 +53,10 @@ const PromoCodes: React.FC = () => {
     if (promoCode) params.append('promoCode', promoCode);
     if (status) params.append('status', status);
 
-    fetch(`/api/promocodes?${params.toString()}`)
-      .then(r => r.json())
-      .then((json: ApiResponse) => {
-        setData(json.Data);
-        setTotalPages(json.Pagination.TotalPages);
-      });
+    api<ApiResponse>(`/api/promocodes?${params.toString()}`).then(json => {
+      setData(json.Data);
+      setTotalPages(json.Pagination.TotalPages);
+    });
   }, [page, promoCode, status]);
 
   React.useEffect(() => {

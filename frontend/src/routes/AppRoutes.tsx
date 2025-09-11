@@ -5,6 +5,7 @@ import ChangePassword from '../features/auth/ChangePassword';
 import Examples from '../pages/Examples';
 import PromoCodes from '../pages/PromoCodes';
 import { useAuth } from '../store/auth';
+import AuthRedirect from '../features/auth/AuthRedirect';
 
 const AppRoutes: React.FC = () => {
   const { loggedIn } = useAuth();
@@ -12,6 +13,7 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/auth" element={<AuthRedirect />} />
       <Route path="/change-password" element={loggedIn ? <ChangePassword /> : <Navigate to="/login" />} />
       <Route path="/examples" element={loggedIn ? <Examples /> : <Navigate to="/login" />} />
       <Route path="/promocodes" element={loggedIn ? <PromoCodes /> : <Navigate to="/login" />} />
