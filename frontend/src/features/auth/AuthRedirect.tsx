@@ -11,8 +11,14 @@ const AuthRedirect: React.FC = () => {
     const token = params.get('token');
     const refresh = params.get('refreshToken');
     if (token && refresh) {
-      login(token, refresh);
-      navigate('/examples');
+      void (async () => {
+        try {
+          await login(token, refresh);
+          navigate('/examples');
+        } catch {
+          navigate('/login');
+        }
+      })();
     } else {
       navigate('/login');
     }

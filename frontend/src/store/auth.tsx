@@ -1,49 +1,105 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { ReactNode } from 'react';
+import { create } from 'zustand';
 
-interface AuthContextValue {
-  loggedIn: boolean;
-  accessToken: string | null;
-  refreshToken: string | null;
-  login: (access: string, refresh: string) => void;
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface MenuItem {
+  title: string;
+  url: string;
+}
+
+interface CurrentUserResponse {
+  profile: UserProfile;
+  menu?: MenuItem[];
+}
+
+interface AuthState {
+  tokens: AuthTokens | null;
+  profile: UserProfile | null;
+  menu: MenuItem[];
+  setTokens: (tokens: AuthTokens | null) => void;
+  setProfile: (profile: UserProfile | null) => void;
+  setMenu: (menu: MenuItem[]) => void;
+  fetchCurrentUser: () => Promise<void>;
+  login: (access: string, refresh: string) => Promise<void>;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const useAuthStore = create<AuthState>((set, get) => ({
+  tokens: null,
+  profile: null,
+  menu: [],
+  setTokens: tokens => set({ tokens }),
+  setProfile: profile => set({ profile }),
+  setMenu: menu => set({ menu }),
+  fetchCurrentUser: async () => {
+    const { tokens } = get();
+    if (!tokens?.accessToken) {
+      throw new Error('Missing access token');
+    }
 
-let tokensRef: { accessToken: string; refreshToken: string } | null = null;
-export const getAuthTokens = () => tokensRef;
-export const setAuthTokens = (tokens: { accessToken: string; refreshToken: string } | null) => {
-  tokensRef = tokens;
-};
+    const res = await fetch('/api/users/me', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tokens.accessToken}`
+      }
+    });
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [tokens, setTokens] = useState<{ accessToken: string; refreshToken: string } | null>(null);
+    if (!res.ok) {
+      throw new Error('Failed to fetch user information');
+    }
 
-  const login = (access: string, refresh: string) => {
-    const t = { accessToken: access, refreshToken: refresh };
-    setTokens(t);
-    setAuthTokens(t);
-  };
-  const logout = () => {
-    setTokens(null);
-    setAuthTokens(null);
-  };
+    const data: CurrentUserResponse = await res.json();
+    set({
+      profile: data.profile,
+      menu: data.menu ?? []
+    });
+  },
+  login: async (access, refresh) => {
+    set({ tokens: { accessToken: access, refreshToken: refresh } });
+    try {
+      await get().fetchCurrentUser();
+    } catch (error) {
+      set({ tokens: null, profile: null, menu: [] });
+      throw error;
+    }
+  },
+  logout: () => {
+    set({ tokens: null, profile: null, menu: [] });
+  }
+}));
 
-  return (
-    <AuthContext.Provider value={{
-      loggedIn: !!tokens,
-      accessToken: tokens?.accessToken || null,
-      refreshToken: tokens?.refreshToken || null,
-      login,
-      logout
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => <>{children}</>;
 
 export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
+  const { tokens, profile, menu, login, logout } = useAuthStore(state => ({
+    tokens: state.tokens,
+    profile: state.profile,
+    menu: state.menu,
+    login: state.login,
+    logout: state.logout
+  }));
+
+  const loggedIn = !!tokens;
+  const accessToken = tokens?.accessToken ?? null;
+  const refreshToken = tokens?.refreshToken ?? null;
+
+  return {
+    loggedIn,
+    accessToken,
+    refreshToken,
+    user: profile,
+    menu,
+    login,
+    logout
+  };
 };

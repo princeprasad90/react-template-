@@ -1,7 +1,7 @@
-import { getAuthTokens, setAuthTokens } from './store/auth';
+import { AuthTokens, useAuthStore } from './store/auth';
 
 export async function api<T>(url: string, options: RequestInit = {}, retry = true): Promise<T> {
-  const tokens = getAuthTokens();
+  const { tokens, setTokens } = useAuthStore.getState();
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -18,8 +18,8 @@ export async function api<T>(url: string, options: RequestInit = {}, retry = tru
       body: JSON.stringify({ refreshToken: tokens.refreshToken })
     });
     if (refreshRes.ok) {
-      const newTokens = await refreshRes.json();
-      setAuthTokens(newTokens);
+      const newTokens: AuthTokens = await refreshRes.json();
+      setTokens(newTokens);
       return api<T>(url, options, false);
     }
   }

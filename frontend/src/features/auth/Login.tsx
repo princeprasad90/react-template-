@@ -29,16 +29,21 @@ const Login: React.FC = () => {
       if (!res.ok) throw new Error('Invalid credentials');
       return res.json();
     },
-    onSuccess: (tokens: { accessToken: string; refreshToken: string }) =>
-      login(tokens.accessToken, tokens.refreshToken)
+    onSuccess: async (tokens: { accessToken: string; refreshToken: string }) => {
+      await login(tokens.accessToken, tokens.refreshToken);
+    }
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const { errors } = await submit({ username, password });
-    if (errors) {
-      setError(Array.isArray(errors) ? errors.join(', ') : String(errors));
+    try {
+      const { errors } = await submit({ username, password });
+      if (errors) {
+        setError(Array.isArray(errors) ? errors.join(', ') : String(errors));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to login');
     }
   };
 
