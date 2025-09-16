@@ -3,7 +3,7 @@ import * as yup from 'yup';
 export interface CommandConfig<T> {
   schema: yup.ObjectSchema<T>;
   api: (values: T) => Promise<any>;
-  onSuccess?: (result: any) => void;
+  onSuccess?: (result: any) => void | Promise<void>;
 }
 
 export function useFormCommand<T>(config: CommandConfig<T>) {
@@ -13,7 +13,9 @@ export function useFormCommand<T>(config: CommandConfig<T>) {
         abortEarly: false,
       });
       const result = await config.api(validated);
-      config.onSuccess?.(result);
+      if (config.onSuccess) {
+        await config.onSuccess(result);
+      }
       return { result };
     } catch (err: any) {
       if (err.name === 'ValidationError') {
