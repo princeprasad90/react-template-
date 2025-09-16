@@ -110,6 +110,7 @@ app.MapAuthEndpoints();
 app.MapItemEndpoints();
 app.MapPromoCodeEndpoints();
 app.MapProductEndpoints();
+app.MapUserEndpoints();
 
 
 app.Run();
